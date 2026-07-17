@@ -1,0 +1,35 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>訂單明細</title>
+<style>
+body{font-family:-apple-system,'PingFang TC','Microsoft JhengHei',Arial,sans-serif;background:#f5f5f5;color:#212121;padding:16px;margin:0}
+.card{max-width:560px;margin:0 auto;background:#fff;border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+h1{font-size:18px;color:#ff4d2e;margin:0 0 12px}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.muted{color:#999}.err{color:#c00}
+.badges{margin:6px 0 14px}.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;margin-right:6px}
+.b-cust{background:#fff3e0;color:#ff9800}.b-odoo{background:#e8f0fe;color:#1a56db}
+.total{font-size:17px;font-weight:700;text-align:right;margin-top:10px}.total span{color:#ff4d2e}
+</style></head><body>
+<div class="card"><h1>🧾 訂單明細</h1><div id="b" class="muted">載入中…</div></div>
+<script>
+var API='https://mickwu108020112.app.n8n.cloud/webhook/papi';
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]});}
+var STATE={draft:'草稿',sent:'已報價',sale:'已確認',done:'已完成',cancel:'已取消'};
+var t=new URLSearchParams(location.search).get('t')||'';
+fetch(API+'?action=order_view&t='+encodeURIComponent(t)).then(function(r){return r.json();}).then(function(d){
+  var b=document.getElementById('b');
+  if(!d||!d.ok){b.innerHTML='<span class="err">連結無效或訂單不存在</span>';return;}
+  var o=d.order,sym=o.currency_symbol||'';
+  var custStage=o.stage_label||(o.customer_confirmed?'已確認(待專人處理)':'報價中(可修改)');
+  var odooState=o.state_label||STATE[o.state]||o.state||'-';
+  var rows=(o.lines||[]).map(function(l){
+    var pr=l.price?(sym+Number(l.price).toFixed(2)):'待確認';
+    var sub=l.subtotal?(sym+Number(l.subtotal).toFixed(2)):'—';
+    return '<div class="row"><div>'+esc(l.product)+' × '+esc(l.qty)+'<br><span class="muted">單價 '+pr+'</span></div><div>'+sub+'</div></div>';
+  }).join('');
+  b.innerHTML='<div><b>'+esc(o.name||'報價單')+'</b></div>'
+    +'<div class="badges"><span class="badge b-cust">'+esc(custStage)+'</span>'
+    +'<span class="badge b-odoo">報價單：'+esc(odooState)+'</span></div>'
+    +rows+'<div class="total">總金額：<span>'+sym+Number(o.total||0).toFixed(2)+'</span></div>';
+}).catch(function(){document.getElementById('b').innerHTML='<span class="err">連線失敗，請稍後再試</span>';});
+</script></body></html>
