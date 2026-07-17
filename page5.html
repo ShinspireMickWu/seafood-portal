@@ -84,13 +84,14 @@
   var OWNED=['orders','order','ai_orders','checkout','contact-display'];
   var of=window.fetch;
   window.fetch=function(u,o){
+    var act=null;
     try{
       var s=String(u);
       if(s.indexOf('/api/')>=0||s.indexOf('/contact-display')>=0){
         o=o||{};
         var path=s.split('?')[0].replace(location.origin,'');
         var qs=(s.split('?')[1]||'');
-        var act='products';
+        act='products';
         if(/\/api\/products\/search/.test(path))act='search';
         else if(/\/api\/products/.test(path))act='products';
         else if(/\/contact-display/.test(path))act='contact-display';
@@ -107,7 +108,19 @@
         o={method:'GET'};
       }
     }catch(e){}
-    return of(u,o);
+    var p=of(u,o);
+    if(!act)return p;
+    return p.then(function(r){
+      return r.clone().text().then(function(txt){
+        var d;try{d=JSON.parse(txt);}catch(e){return r;}
+        if(d&&d.ok===false){return new Response(JSON.stringify({detail:d.hint||d.error||'error'}),{status:400,headers:{'Content-Type':'application/json'}});}
+        var nd=null;
+        if(act==='checkout'&&d&&d.order){nd=Object.assign({},d,{order_name:d.order.name,amount_total:d.order.total});}
+        else if(act==='order'&&d&&(d.name||d.lines)){nd=Object.assign({},d,{amount:(d.total!=null?d.total:d.amount),lines:(d.lines||[]).map(function(l){return Object.assign({},l,{product_name:l.product_name||l.product});})});}
+        if(!nd)return r;
+        return new Response(JSON.stringify(nd),{status:r.status,headers:{'Content-Type':'application/json'}});
+      }).catch(function(){return r;});
+    });
   };
 })();
 </script>
