@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seafood Online Portal - Purchase History</title>
+    <style>
+        :root {
+            --primary-orange: #ff4d2e;
+            --primary-hover: #fb3411;
+            --secondary-blue: #0046b4;
+            --bg-light: #f5f5f5;
+            --border-color: #e5e5e5;
+            --text-dark: #212121;
+            --text-muted: #757575;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); padding: 15px; }
+        .shopee-container { max-width: 1200px; margin: 0 auto; }
+        
+        .shopee-header { background: linear-gradient(-180deg, var(--primary-orange), #ff6633); color: white; padding: 15px 20px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .shopee-header h1 { font-size: 22px; font-weight: 700; }
+        .header-meta { display: flex; gap: 25px; font-size: 14px; align-items: center; flex-wrap: wrap; }
+        .lang-switch-span a { color: white; text-decoration: none; font-weight: normal; cursor: pointer; }
+        .lang-switch-span a.active { font-weight: bold; text-decoration: underline; }
+
+        .history-title-bar { background: white; padding: 15px 20px; border-radius: 6px; margin: 20px 0 15px 0; font-size: 18px; font-weight: 600; border-left: 4px solid var(--primary-orange); }
+        
+        .dashboard-layout { display: grid; grid-template-columns: 45% 52%; gap: 3%; align-items: start; }
+        .panel-card { background: white; border-radius: 6px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); min-height: 350px; }
+        .panel-title { font-size: 15px; font-weight: 600; padding-bottom: 10px; border-bottom: 2px solid var(--border-color); margin-bottom: 15px; color: var(--text-dark); }
+        
+        .order-row-item { border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .order-row-item:hover { border-color: var(--primary-orange); background-color: #fff5f3; }
+        .order-row-item.selected-active { border-color: var(--primary-orange); background-color: #fff5f3; box-shadow: 0 0 6px rgba(255, 77, 46, 0.15); }
+        .order-brief h5 { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+        .order-brief p { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+        .order-brief .badge { display: inline-block; background: #fff3e0; color: #ff9800; font-size: 11px; padding: 2px 8px; border-radius: 3px; margin-top: 4px; font-weight: 500; }
+        
+        .order-cost-action { text-align: right; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+        .order-cost-action .amt { font-weight: 700; color: var(--primary-orange); font-size: 14px; }
+        .btn-action-repeat { background-color: var(--primary-orange); color: white; border: none; padding: 6px 12px; font-size: 11px; border-radius: 3px; cursor: pointer; text-decoration: none; font-weight: bold; min-height: 30px; display: inline-flex; align-items: center; }
+        .btn-action-repeat:hover { background-color: var(--primary-hover); }
+
+        .detail-meta-header { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); flex-wrap: wrap; gap: 5px; }
+        
+        .table-responsive-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .detail-table { width: 100%; border-collapse: collapse; margin-top: 5px; min-width: 450px; }
+        .detail-table th { text-align: left; padding: 8px; font-size: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
+        .detail-table td { padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #fdfdfd; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        .detail-summary-block { margin-top: 15px; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font-size: 13px; border-top: 1px dashed var(--border-color); padding-top: 12px; }
+        .detail-total-line { font-size: 15px; font-weight: 600; margin-top: 4px; color: var(--text-dark); }
+        .detail-total-line .price { color: var(--primary-orange); font-size: 18px; font-weight: 700; }
+
+        .actions-row { margin-top: 25px; }
+        
+        .btn-home { background-color: #333; color: white; border: none; padding: 12px 30px; font-size: 14px; border-radius: 4px; text-decoration: none; font-weight: 500; display: inline-block; min-height: 44px; line-height: 20px; text-align: center; }
+        .btn-home:hover { background-color: #111; }
+        .no-selection-msg { text-align: center; color: var(--text-muted); font-size: 14px; padding-top: 80px; }
+
+        @media (max-width: 991px) {
+            .dashboard-layout { grid-template-columns: 1fr; gap: 20px; }
+            .panel-card { min-height: auto; }
+        }
+        @media (max-width: 576px) {
+            .shopee-header { flex-direction: column; text-align: center; }
+            .order-row-item { flex-direction: column; align-items: stretch; text-align: left; }
+            .order-cost-action { align-items: flex-start; text-align: left; margin-top: 10px; }
+            .btn-home { width: 100%; }
+        }
+    </style>
+<script>(function(){var API="https://mickwu108020112.app.n8n.cloud/webhook/papi";var of=window.fetch;window.fetch=function(u,o){try{var s=String(u);if(s.indexOf("/api/")>=0||s.indexOf("/contact-display")>=0){var path=s.split("?")[0].replace(location.origin,"");var qs=(s.split("?")[1]||"");var act="products";if(/\/api\/products\/search/.test(path))act="search";else if(/\/api\/products/.test(path))act="products";else if(/\/contact-display/.test(path))act="contact-display";else if(/\/api\/orders\//.test(path)){act="order";var id=path.split("/").pop();qs=(qs?qs+"&":"")+"id="+id;}else if(/\/api\/orders/.test(path))act="orders";else if(/\/api\/checkout/.test(path))act="checkout";else if(/\/api\/ai\/categories/.test(path))act="ai_categories";else if(/\/api\/ai\/products/.test(path))act="ai_products";else if(/\/api\/ai\/orders/.test(path))act="ai_orders";u=API+"?action="+act+(qs?"&"+qs:"");}}catch(e){}return of(u,o);};})();</script></head>
+<body>
+
+<div class="shopee-container">
+    <header class="shopee-header">
+        <h1 id="txt-h1">Seafood Online Portal</h1>
+        <div class="header-meta">
+            <div class="lang-switch-span">
+                <span id="txt-lang-lbl">Language</span>: 
+                <a id="m-lang-en" onclick="setLang('en')">EN</a> / 
+                <a id="m-lang-zh" onclick="setLang('zh')">CN</a>
+            </div>
+            <div><span id="txt-user-lbl">User</span>: <strong id="txt-username">Customer Name</strong></div>
+        </div>
+    </header>
+
+    <div class="history-title-bar" id="txt-bar-title">Grocery Account Ledger History</div>
+
+    <div class="dashboard-layout">
+        <div class="panel-card">
+            <div class="panel-title" id="txt-title-master">Past Invoices History List</div>
+            <div id="masterOrdersListContainer"></div>
+        </div>
+
+        <div class="panel-card" id="detailPanelCard">
+            <div class="panel-title" id="txt-title-detail">Invoice Breakdown Review</div>
+            <div id="detailBreakdownContainer">
+                <div class="no-selection-msg" id="txt-no-selection">Select a grocery receipt invoice row from the left panel to display breakdown itemization logs.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <!-- Return Button target -->
+        <a href="page1.html" class="btn-home" id="txt-btn-home">Return to Main Portal</a>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.__API_BASE__ || 'http://127.0.0.1:8000';
+
+    async function apiFetch(path, opts = {}) {
+        const token = localStorage.getItem('apiToken') || window.__API_TOKEN__ || '';
+        const headers = { ...(opts.headers || {}) };
+        if (token) headers['X-API-Token'] = token;
+        return fetch(API_BASE + path, { ...opts, headers });
+    }
+
+    let orderHistoryDatabase = [];   // 從 /api/orders 載入
+    let selectedOrderId = null;
+    let selectedOrderDetail = null;
+
+    const STATE_LABEL = {
+        en: { draft: "Quotation", sent: "Quote Sent", sale: "Confirmed", done: "Done", cancel: "Cancelled" },
+        zh: { draft: "报价中", sent: "报价已送出", sale: "已确认", done: "已完成", cancel: "已取消" }
+    };
+
+    const dictionary = {
+        en: {
+            title: "Seafood Online Portal", langLbl: "Language", userLbl: "User", username: "Customer Name",
+            barTitle: "Grocery Account Ledger History", titleMaster: "Past Orders (from Odoo)",
+            titleDetail: "Order Breakdown", btnHome: "Return to Main Portal",
+            noSelection: "Select an order from the left to see its line items.",
+            lblOrder: "Odoo Order No", lblDate: "Order Date", thName: "Product", thPrice: "Unit Price",
+            thQty: "Qty", thSub: "Subtotal", lblTotalPaid: "Total",
+            btnRepeatAction: "Re-order", emptyList: "No orders yet. Go place one!",
+            loading: "Loading from Odoo…"
+        },
+        zh: {
+            title: "海鲜网上超市", langLbl: "语言", userLbl: "用户", username: "贵宾顾客姓名",
+            barTitle: "超市历史交易账面", titleMaster: "历史订单（来自 Odoo）",
+            titleDetail: "订单明细", btnHome: "返回主门户",
+            noSelection: "请在左侧选择一笔订单查看明细。",
+            lblOrder: "Odoo 订单号", lblDate: "下单时间", thName: "商品", thPrice: "单价",
+            thQty: "数量", thSub: "小计", lblTotalPaid: "总计",
+            btnRepeatAction: "再下一单", emptyList: "目前没有订单，去下一单吧！",
+            loading: "正在从 Odoo 载入…"
+        }
+    };
+
+    // 從網址 ?phone= / ?email= 帶入聯絡人，存 localStorage 供站內各頁共用；頁首聯絡人吃這個值。
+    function captureContactFromURL() {
+        const p = new URLSearchParams(window.location.search);
+        const phone = p.get('phone');
+        const email = p.get('email');
+        if (phone) { localStorage.setItem('contactType', 'phone'); localStorage.setItem('contactInfo', phone); }
+        else if (email) { localStorage.setItem('contactType', 'email'); localStorage.setItem('contactInfo', email); }
+    }
+    function contactLabel() { return localStorage.getItem('contactInfo') || null; }
+
+    function setLang(lang) {
+        localStorage.setItem('selectedLanguage', lang);
+        document.getElementById('m-lang-en').className = lang === 'en' ? 'active' : '';
+        document.getElementById('m-lang-zh').className = lang === 'zh' ? 'active' : '';
+
+        const d = dictionary[lang];
+        document.getElementById('txt-h1').textContent = d.title;
+        document.getElementById('txt-lang-lbl').textContent = d.langLbl;
+        document.getElementById('txt-user-lbl').textContent = d.userLbl;
+        document.getElementById('txt-username').textContent = contactLabel() || d.username;
+        document.getElementById('txt-bar-title').textContent = d.barTitle;
+        document.getElementById('txt-title-master').textContent = d.titleMaster;
+        document.getElementById('txt-title-detail').textContent = d.titleDetail;
+        document.getElementById('txt-btn-home').textContent = d.btnHome;
+
+        const noSelectEl = document.getElementById('txt-no-selection');
+        if (noSelectEl) noSelectEl.textContent = d.noSelection;
+
+        renderMasterList(lang);
+        if (selectedOrderDetail) renderDetailBreakdown(lang);
+    }
+
+    async function loadOrders() {
+        const lang = localStorage.getItem('selectedLanguage') || 'en';
+        const container = document.getElementById('masterOrdersListContainer');
+        container.innerHTML = `<div style="padding:20px; color:#999;">${dictionary[lang].loading}</div>`;
+        try {
+            const res = await apiFetch('/api/orders');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            orderHistoryDatabase = await res.json();
+        } catch (e) {
+            container.innerHTML = `<div style="padding:20px; color:#c00;">無法連接 ${API_BASE}</div>`;
+            return;
+        }
+        renderMasterList(lang);
+    }
+
+    function renderMasterList(lang) {
+        const container = document.getElementById('masterOrdersListContainer');
+        container.innerHTML = '';
+        const d = dictionary[lang];
+
+        if (orderHistoryDatabase.length === 0) {
+            container.innerHTML = `<div style="padding:20px; color:#999;">${d.emptyList}</div>`;
+            return;
+        }
+
+        orderHistoryDatabase.forEach((order) => {
+            const statusText = STATE_LABEL[lang][order.state] || order.state;
+            const isActive = selectedOrderId === order.id;
+            const dateOnly = (order.date || '').split(' ')[0];
+
+            const rowDiv = document.createElement('div');
+            rowDiv.className = `order-row-item ${isActive ? 'selected-active' : ''}`;
+            rowDiv.setAttribute('onclick', `selectOrder(${order.id})`);
+            rowDiv.innerHTML = `
+                <div class="order-brief">
+                    <h5>${order.name}</h5>
+                    <p>${d.lblDate}: ${dateOnly}</p>
+                    <span class="badge">${statusText}</span>
+                </div>
+                <div class="order-cost-action">
+                    <span class="amt">SGD ${Number(order.amount).toFixed(2)}</span>
+                    <button class="btn-action-repeat" onclick="routeToRepeatPage(event, ${order.id})">${d.btnRepeatAction}</button>
+                </div>
+            `;
+            container.appendChild(rowDiv);
+        });
+    }
+
+    async function selectOrder(orderId) {
+        selectedOrderId = orderId;
+        const lang = localStorage.getItem('selectedLanguage') || 'en';
+        document.querySelectorAll('.order-row-item').forEach(el => {
+            el.classList.toggle('selected-active', el.getAttribute('onclick').includes(`(${orderId})`));
+        });
+        const container = document.getElementById('detailBreakdownContainer');
+        container.innerHTML = `<div style="padding:20px; color:#999;">${dictionary[lang].loading}</div>`;
+        try {
+            const res = await apiFetch(`/api/orders/${orderId}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            selectedOrderDetail = await res.json();
+        } catch (e) {
+            container.innerHTML = `<div style="padding:20px; color:#c00;">載入訂單明細失敗</div>`;
+            return;
+        }
+        renderDetailBreakdown(lang);
+    }
+
+    function renderDetailBreakdown(lang) {
+        const container = document.getElementById('detailBreakdownContainer');
+        const order = selectedOrderDetail;
+        const d = dictionary[lang];
+
+        let tableRowsHtml = '';
+        let subtotal = 0;
+        order.lines.forEach(ln => {
+            subtotal += Number(ln.subtotal);
+            tableRowsHtml += `
+                <tr>
+                    <td><strong>${ln.product_name}</strong></td>
+                    <td class="text-right">SGD ${Number(ln.price).toFixed(2)}</td>
+                    <td class="text-center">${ln.qty}</td>
+                    <td class="text-right">SGD ${Number(ln.subtotal).toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        const dateOnly = (order.date || '').split(' ')[0];
+        container.innerHTML = `
+            <div class="detail-meta-header">
+                <div>${d.lblOrder}: <strong>${order.name}</strong></div>
+                <div>${d.lblDate}: <strong>${dateOnly}</strong></div>
+            </div>
+            <div class="table-responsive-wrapper">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>${d.thName}</th>
+                            <th class="text-right">${d.thPrice}</th>
+                            <th class="text-center">${d.thQty}</th>
+                            <th class="text-right">${d.thSub}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRowsHtml}</tbody>
+                </table>
+            </div>
+            <div class="detail-summary-block">
+                <div class="detail-total-line">
+                    ${d.lblTotalPaid}: <span class="price">SGD ${Number(order.amount).toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function routeToRepeatPage(event, orderId) {
+        event.stopPropagation();
+        window.location.href = `page3.html?order_id=${orderId}`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        captureContactFromURL();
+        setLang(localStorage.getItem('selectedLanguage') || 'en');
+        loadOrders();
+    });
+</script>
+</body>
+</html>

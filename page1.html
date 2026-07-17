@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seafood Online Portal - Storefront</title>
+    <style>
+        :root {
+            --primary-orange: #ff4d2e;
+            --primary-hover: #fb3411;
+            --secondary-blue: #0046b4;
+            --bg-light: #f5f5f5;
+            --border-color: #e5e5e5;
+            --text-dark: #212121;
+            --text-muted: #757575;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-light); 
+            color: var(--text-dark); 
+            padding: 20px; 
+            min-height: 100vh;
+        }
+        .shopee-container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Header Match for image_f15727.png */
+        .shopee-header { 
+            background: linear-gradient(-180deg, var(--primary-orange), #ff6633); 
+            color: white; 
+            padding: 15px 20px; 
+            border-radius: 6px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .shopee-header h1 { font-size: 22px; font-weight: 700; }
+        .header-meta { display: flex; gap: 15px; font-size: 14px; align-items: center; flex-wrap: wrap; }
+
+        /* Navigation & Reset Buttons Matching styling */
+        .btn-reset-history { 
+            background-color: #343a40; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            transition: background 0.2s;
+        }
+        .btn-reset-history:hover { background-color: #212529; }
+
+        .btn-history-nav { 
+            background-color: rgba(255, 255, 255, 0.2); 
+            color: white; 
+            border: 1px solid rgba(255, 255, 255, 0.6); 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+        }
+        .btn-history-nav:hover { background-color: white; color: var(--primary-orange); }
+
+        .store-layout { display: grid; grid-template-columns: 68% 30%; gap: 2%; margin-top: 20px; align-items: start; }
+        
+        .shelf-card { background: white; border-radius: 6px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .shelf-control-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .shelf-title { font-size: 16px; font-weight: 600; }
+        
+        /* Layout Toggle Buttons Styles */
+        .view-toggle-buttons { display: inline-flex; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background: #eee; }
+        .view-toggle-buttons button { background: #fdfdfd; border: none; padding: 6px 12px; font-size: 12px; cursor: pointer; font-weight: 500; color: #555; }
+        .view-toggle-buttons button.active { background: var(--primary-orange); color: white; font-weight: 600; }
+
+        /* Dynamic View Modes Layout Rules */
+        .product-grid { display: grid; gap: 15px; }
+        .product-grid.view-large { grid-template-columns: repeat(2, 1fr); }
+        .product-grid.view-detail { grid-template-columns: 1fr; }
+
+        .product-item { border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; background: #fff; transition: border-color 0.15s; }
+        .product-item:hover { border-color: var(--primary-orange); }
+        
+        /* View structural variations */
+        .view-large .product-item { display: flex; flex-direction: column; justify-content: space-between; min-height: 220px; }
+        .view-detail .product-item { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 20px; padding: 12px 20px; }
+
+        .prod-info { flex: 1; }
+        .view-detail .prod-info { display: flex; align-items: center; gap: 15px; justify-content: space-between; width: 75%; }
+        
+        .prod-title-box { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 5px; }
+        .view-large .prod-title-box { height: 38px; overflow: hidden; }
+        .view-detail .prod-title-box { margin-bottom: 0; width: 45%; }
+
+        .prod-price-box { font-size: 15px; font-weight: 700; color: var(--primary-orange); margin-bottom: 8px; }
+        .view-detail .prod-price-box { margin-bottom: 0; width: 20%; text-align: right; }
+
+        .stock-status-line { font-size: 12px; margin-bottom: 12px; font-weight: 500; }
+        .view-detail .stock-status-line { margin-bottom: 0; width: 35%; text-align: right; }
+        .status-instock { color: #2ecc71; }
+        .status-out { color: #e74c3c; }
+
+        .action-container { width: 100%; }
+        .view-detail .action-container { width: 22%; text-align: right; }
+
+        .btn-add-cart { background-color: var(--primary-orange); color: white; border: none; width: 100%; padding: 10px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+        .btn-add-cart:hover { background-color: var(--primary-hover); }
+
+        .exception-box { background-color: #fff3e0; border: 1px solid #ffe0b2; border-radius: 4px; padding: 8px; margin: 8px 0; font-size: 12px; }
+        .exception-box select { width: 100%; padding: 5px; margin-top: 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 12px; }
+
+        /* Cart panel configuration */
+        .cart-card { background: white; border-radius: 6px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); position: sticky; top: 20px; }
+        .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #f5f5f5; font-size: 13px; gap: 10px; }
+        
+        /* Direct edit inputs configuration */
+        .cart-qty-control { display: flex; align-items: center; gap: 8px; }
+        .cart-qty-control button { width: 28px; height: 28px; background: #eee; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; }
+        .cart-qty-control input { 
+            width: 44px; 
+            height: 28px; 
+            text-align: center; 
+            border: 1px solid #ccc; 
+            border-radius: 3px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            -moz-appearance: textfield; 
+        }
+        .cart-qty-control input::-webkit-outer-spin-button,
+        .cart-qty-control input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .cart-summary { border-top: 1px solid var(--border-color); margin-top: 15px; padding-top: 15px; font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+        .cart-total-line { font-weight: 700; font-size: 16px; margin-top: 5px; display: flex; justify-content: space-between; border-top: 1px dashed #eee; padding-top: 8px; }
+        .cart-total-line span.price { color: var(--primary-orange); }
+
+        .btn-checkout { background: linear-gradient(90deg, #ff6633, var(--primary-orange)); color: white; border: none; width: 100%; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; margin-top: 15px; display: block; text-align: center; text-decoration: none; box-shadow: 0 4px 10px rgba(255, 77, 46, 0.2); }
+
+        /* Custom notifications configuration */
+        .custom-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 9999;
+        }
+        .custom-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Screen adaptation settings */
+        @media (max-width: 991px) {
+            .store-layout { grid-template-columns: 1fr; gap: 20px; }
+            .cart-card { position: static; margin-top: 15px; }
+        }
+        @media (max-width: 576px) {
+            .shopee-header { flex-direction: column; text-align: center; }
+            .header-meta { justify-content: center; }
+            .product-grid.view-large { grid-template-columns: 1fr; }
+            .view-detail .product-item { flex-direction: column; align-items: stretch; }
+            .view-detail .prod-info { width: 100%; flex-direction: column; align-items: stretch; text-align: left; }
+            .view-detail .prod-title-box, .view-detail .prod-price-box, .view-detail .stock-status-line { width: 100%; text-align: left; }
+            .view-detail .action-container { width: 100%; margin-top: 10px; }
+        }
+    </style>
+<script>(function(){var API="https://mickwu108020112.app.n8n.cloud/webhook/papi";var of=window.fetch;window.fetch=function(u,o){try{var s=String(u);if(s.indexOf("/api/")>=0||s.indexOf("/contact-display")>=0){var path=s.split("?")[0].replace(location.origin,"");var qs=(s.split("?")[1]||"");var act="products";if(/\/api\/products\/search/.test(path))act="search";else if(/\/api\/products/.test(path))act="products";else if(/\/contact-display/.test(path))act="contact-display";else if(/\/api\/orders\//.test(path)){act="order";var id=path.split("/").pop();qs=(qs?qs+"&":"")+"id="+id;}else if(/\/api\/orders/.test(path))act="orders";else if(/\/api\/checkout/.test(path))act="checkout";else if(/\/api\/ai\/categories/.test(path))act="ai_categories";else if(/\/api\/ai\/products/.test(path))act="ai_products";else if(/\/api\/ai\/orders/.test(path))act="ai_orders";u=API+"?action="+act+(qs?"&"+qs:"");}}catch(e){}return of(u,o);};})();</script></head>
+<body>
+
+<div class="shopee-container">
+    <header class="shopee-header">
+        <h1 id="txt-h1">Seafood Online Portal</h1>
+        <div class="header-meta">
+            <a href="page4.html" class="btn-history-nav" id="txt-btn-history">Purchase History</a>
+            
+            <div class="lang-switch-span">
+                <span id="txt-lang-lbl">Language</span>: 
+                <a id="m-lang-en" onclick="setLang('en')">EN</a> / 
+                <a id="m-lang-zh" onclick="setLang('zh')">CN</a>
+            </div>
+            <div><span id="txt-user-lbl">User</span>: <strong id="txt-username">Customer Name</strong></div>
+        </div>
+    </header>
+
+    <div class="store-layout">
+        <!-- Dual Display Layout shelf -->
+        <div class="shelf-card">
+            <div class="shelf-control-header">
+                <div class="shelf-title" id="txt-shelf-title">Fresh Daily Groceries Storefront</div>
+                
+                <div class="view-toggle-buttons">
+                    <button id="btn-view-large" onclick="setViewMode('large')">Large View</button>
+                    <button id="btn-view-detail" onclick="setViewMode('detail')">Detailed View</button>
+                </div>
+            </div>
+            
+            <div class="product-grid view-large" id="productGridContainer"></div>
+        </div>
+
+        <!-- Sidebar Active Basket Container with Multi-Metric Totals -->
+        <div class="cart-card">
+            <div style="font-size: 16px; font-weight: 600; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 15px;" id="txt-cart-title">My Grocery Basket</div>
+            <div id="cartItemsContainer"></div>
+            
+            <div class="cart-summary">
+                <!-- Total Quantity Line Added -->
+                <div style="display: flex; justify-content: space-between;">
+                    <span id="txt-lbl-total-qty">Total Quantity</span>: 
+                    <strong><span id="valCartTotalQty">0</span></strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span id="txt-lbl-subtotal">Subtotal</span>: 
+                    <span>SGD <span id="valCartSubtotal">0.00</span></span>
+                </div>
+                <div class="cart-total-line">
+                    <span id="txt-lbl-est">Est. Total</span>: 
+                    <span class="price">SGD <span id="valCartTotal">0.00</span></span>
+                </div>
+            </div>
+            <button class="btn-checkout" id="txt-btn-checkout" onclick="proceedToCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 後端 API 位址：部署時可由前置 script 設定 window.__API_BASE__ 注入；本機開發走預設
+    const API_BASE = window.__API_BASE__ || 'http://127.0.0.1:8000';
+
+    // 共用 fetch helper：自動帶 X-API-Token（沒設 token 則 header 不會出現，跟本機開發行為一致）
+    async function apiFetch(path, opts = {}) {
+        const token = localStorage.getItem('apiToken') || window.__API_TOKEN__ || '';
+        const headers = { ...(opts.headers || {}) };
+        if (token) headers['X-API-Token'] = token;
+        return fetch(API_BASE + path, { ...opts, headers });
+    }
+
+    let cart = {};            // { [odooProductId]: qty }
+    let itemsData = [];       // 從 /api/products 動態載入
+    let currentViewMode = 'large';
+
+    const dictionary = {
+        en: {
+            title: "Seafood Online Portal", langLbl: "Language", userLbl: "User", username: "Customer Name",
+            historyBtn: "Purchase History", shelfTitle: "Fresh Daily Groceries Storefront", cartTitle: "My Grocery Basket",
+            estTotal: "Est. Total", btnCheckout: "Proceed to Checkout", btnAdd: "Add to Basket",
+            inStock: "In Stock", outStock: "Out of Stock", selectRoute: "Select Substitution Mode:", 
+            emptyCart: "Your basket is empty.", largeView: "Large View", detailView: "Detail View",
+            routes: ["Cancel Line Item", "Substitute with Brand B Milk (+SGD 0.50)", "Contact Customer Service Line"],
+            btnReset: "Clear History", resetAlert: "All active carts and purchase history logs have been cleared successfully!",
+            totalQtyLbl: "Total Quantity", subtotalLbl: "Subtotal"
+        },
+        zh: {
+            title: "海鲜网上超市", langLbl: "语言", userLbl: "用户", username: "贵宾顾客姓名",
+            historyBtn: "购买历史记录", shelfTitle: "每日生鲜百货货架总库", cartTitle: "我的购物车篮",
+            estTotal: "预计总结算金额", btnCheckout: "去收银台核对结算", btnAdd: "加入购物车",
+            inStock: "库存充足", outStock: "缺货中", selectRoute: "请指定配货处理方案:", 
+            emptyCart: "购物车目前空空如也。", largeView: "大图视图", detailView: "详细列表",
+            routes: ["直接取消该商品缺货项", "替换为品牌B高品质鲜奶 (+SGD 0.50)", "保留订单并转交客服专线沟通"],
+            btnReset: "清除历史并重置", resetAlert: "所有超市购物车状态参数与历史采购流水台账已全部重置归零！",
+            totalQtyLbl: "商品总数量", subtotalLbl: "小计金额"
+        }
+    };
+
+    // Custom notification module replacing default blocky alert box
+    function showToastNotification(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'custom-toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.classList.add('show'); }, 50);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => { toast.remove(); }, 500);
+        }, 3500);
+    }
+
+    // 機器人下單連結改帶「不可竄改的 token」(?t=)，不再帶明碼電話 → 客戶無法改成別人。
+    // 舊版 ?phone=/?email= 仍相容（但建議淘汰）。token 存 localStorage 供站內各頁共用、結帳時回傳後端歸戶。
+    function captureContactFromURL() {
+        const p = new URLSearchParams(window.location.search);
+        const t = p.get('t');
+        if (t) {
+            localStorage.setItem('orderToken', t);
+            localStorage.setItem('contactType', 'token');
+            localStorage.removeItem('contactInfo');  // 顯示值改由 /contact-display 解析（遮罩）
+            return;
+        }
+        const phone = p.get('phone');
+        const email = p.get('email');
+        if (phone) { localStorage.setItem('contactType', 'phone'); localStorage.setItem('contactInfo', phone); }
+        else if (email) { localStorage.setItem('contactType', 'email'); localStorage.setItem('contactInfo', email); }
+    }
+    function contactLabel() {
+        return localStorage.getItem('contactInfo') || (localStorage.getItem('orderToken') ? '會員帳號' : null);
+    }
+    // 用 token 跟後端要「遮罩後」的顯示字串（例如 ····6166）更新頁首，不外洩完整號碼、也不可編輯。
+    async function resolveContactDisplay() {
+        const t = localStorage.getItem('orderToken');
+        if (!t) return;
+        try {
+            const res = await fetch(API_BASE + '/contact-display?t=' + encodeURIComponent(t));
+            if (!res.ok) return;
+            const d = await res.json();
+            if (d.ok && d.display) {
+                localStorage.setItem('contactInfo', d.display);
+                const el = document.getElementById('txt-username');
+                if (el) el.textContent = d.display;
+            }
+        } catch (e) {}
+    }
+
+    function setLang(lang) {
+        localStorage.setItem('selectedLanguage', lang);
+        document.getElementById('m-lang-en').className = lang === 'en' ? 'active' : '';
+        document.getElementById('m-lang-zh').className = lang === 'zh' ? 'active' : '';
+
+        const d = dictionary[lang];
+        document.getElementById('txt-h1').textContent = d.title;
+        document.getElementById('txt-btn-history').textContent = d.historyBtn;
+        document.getElementById('txt-lang-lbl').textContent = d.langLbl;
+        document.getElementById('txt-user-lbl').textContent = d.userLbl;
+        // 有從網址帶入聯絡人就顯示聯絡人，否則用預設字。
+        document.getElementById('txt-username').textContent = contactLabel() || d.username;
+        document.getElementById('txt-shelf-title').textContent = d.shelfTitle;
+        document.getElementById('txt-cart-title').textContent = d.cartTitle;
+        document.getElementById('txt-lbl-est').textContent = d.estTotal;
+        document.getElementById('txt-btn-checkout').textContent = d.btnCheckout;
+        document.getElementById('btn-view-large').textContent = d.largeView;
+        document.getElementById('btn-view-detail').textContent = d.detailView;
+        
+        document.getElementById('txt-lbl-total-qty').textContent = d.totalQtyLbl;
+        document.getElementById('txt-lbl-subtotal').textContent = d.subtotalLbl;
+
+        renderGrid(lang);
+        renderCart(lang);
+    }
+
+    function setViewMode(mode) {
+        currentViewMode = mode;
+        const grid = document.getElementById('productGridContainer');
+        
+        document.getElementById('btn-view-large').className = mode === 'large' ? 'active' : '';
+        document.getElementById('btn-view-detail').className = mode === 'detail' ? 'active' : '';
+        
+        if (mode === 'large') {
+            grid.className = 'product-grid view-large';
+        } else {
+            grid.className = 'product-grid view-detail';
+        }
+        renderGrid(localStorage.getItem('selectedLanguage') || 'en');
+    }
+
+    // 從 Odoo 拉商品；失敗時提示後端是否啟動
+    async function loadProducts() {
+        try {
+            const res = await apiFetch('/api/products');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            itemsData = await res.json();
+        } catch (e) {
+            showToastNotification(`無法連接後端 API，請確認 ${API_BASE} 已啟動`);
+            itemsData = [];
+        }
+    }
+
+    function renderGrid(lang) {
+        const grid = document.getElementById('productGridContainer');
+        grid.innerHTML = '';
+        const d = dictionary[lang];
+
+        if (itemsData.length === 0) {
+            grid.innerHTML = `<div style="padding:30px; text-align:center; color:#999;">尚無商品資料，請先啟動後端 API</div>`;
+            return;
+        }
+
+        itemsData.forEach((item) => {
+            const name = item.name;
+            const isOut = item.stock <= 0;
+
+            const pItem = document.createElement('div');
+            pItem.className = 'product-item';
+
+            let exceptionHtml = '';
+            if (isOut) {
+                exceptionHtml = `
+                    <div class="exception-box" id="exBox-${item.id}">
+                        <label>${d.selectRoute}</label>
+                        <select id="routeSelect-${item.id}" onchange="saveRouteChoice(${item.id})">
+                            <option value="${d.routes[0]}">${d.routes[0]}</option>
+                            <option value="${d.routes[1]}">${d.routes[1]}</option>
+                            <option value="${d.routes[2]}">${d.routes[2]}</option>
+                        </select>
+                    </div>
+                `;
+            }
+
+            pItem.innerHTML = `
+                <div class="prod-info">
+                    <div class="prod-title-box"><strong>${name}</strong></div>
+                    <div class="prod-price-box">SGD ${Number(item.price).toFixed(2)}</div>
+                    <div class="stock-status-line ${isOut ? 'status-out' : 'status-instock'}">
+                        ${isOut ? d.outStock : d.inStock + ': ' + item.stock}
+                    </div>
+                    ${currentViewMode === 'large' ? exceptionHtml : ''}
+                </div>
+                ${currentViewMode === 'detail' && isOut ? exceptionHtml : ''}
+                <div class="action-container">
+                    <button class="btn-add-cart" onclick="addToCart(${item.id})" ${isOut ? 'style="background:#f39c12;"' : ''}>
+                        ${d.btnAdd}
+                    </button>
+                </div>
+            `;
+            grid.appendChild(pItem);
+        });
+    }
+
+    function findItem(id) {
+        return itemsData.find(it => it.id === id);
+    }
+
+    function addToCart(id) {
+        const item = findItem(id);
+        if (item && item.stock <= 0) {
+            const lang = localStorage.getItem('selectedLanguage') || 'en';
+            showToastNotification(lang === 'zh'
+                ? '⚠️ 此商品缺貨，請聯絡客服處理替代方案'
+                : '⚠️ Out of stock — please contact support for substitution');
+            return;
+        }
+        if (!cart[id]) cart[id] = 0;
+        cart[id]++;
+        // 超過庫存仍可加入購物車，但提示需洽客服安排叫貨
+        if (item && cart[id] > item.stock) {
+            const lang = localStorage.getItem('selectedLanguage') || 'en';
+            showToastNotification(lang === 'zh'
+                ? `库存仅剩 ${item.stock},超量需洽客服安排叫货`
+                : `Only ${item.stock} in stock; extra units require customer service`);
+        }
+        saveCartState();
+        renderCart(localStorage.getItem('selectedLanguage') || 'en');
+    }
+
+    function saveRouteChoice(id) {
+        const selectEl = document.getElementById(`routeSelect-${id}`);
+        if(selectEl) {
+            localStorage.setItem('selectedStockOption', selectEl.value);
+        }
+    }
+
+    function updateQty(id, delta) {
+        if (!cart[id]) return;
+        cart[id] += delta;
+        if (cart[id] <= 0) delete cart[id];
+        saveCartState();
+        renderCart(localStorage.getItem('selectedLanguage') || 'en');
+    }
+
+    function directUpdateQty(id, value) {
+        let parsed = parseInt(value);
+        if (isNaN(parsed) || parsed < 0) parsed = 0;
+
+        const item = findItem(id);
+        const maxStock = item ? item.stock : 0;
+
+        // 超過庫存不 cap：保留使用者輸入的數量，由結帳時統一提示需洽客服
+        if (maxStock > 0 && parsed > maxStock) {
+            const lang = localStorage.getItem('selectedLanguage') || 'en';
+            const warnMsg = lang === 'zh'
+                ? `库存仅剩 ${maxStock},超量需洽客服安排叫货`
+                : `Only ${maxStock} in stock; extra units require customer service`;
+            showToastNotification(warnMsg);
+        }
+
+        if (parsed === 0) {
+            delete cart[id];
+        } else {
+            cart[id] = parsed;
+        }
+        saveCartState();
+        renderCart(localStorage.getItem('selectedLanguage') || 'en');
+    }
+
+    function renderCart(lang) {
+        const container = document.getElementById('cartItemsContainer');
+        container.innerHTML = '';
+        let subtotal = 0;
+        let totalQuantity = 0;
+        let activeLines = 0;
+
+        itemsData.forEach(item => {
+            const qty = cart[item.id] || 0;
+            if (qty > 0) {
+                activeLines++;
+                totalQuantity += qty;
+                subtotal += qty * Number(item.price);
+
+                const row = document.createElement('div');
+                row.className = 'cart-item-row';
+                row.innerHTML = `
+                    <div style="max-width:55%; font-weight:600;">${item.name}</div>
+                    <div class="cart-qty-control">
+                        <button onclick="updateQty(${item.id}, -1)">-</button>
+                        <input type="number" min="0" value="${qty}" onchange="directUpdateQty(${item.id}, this.value)">
+                        <button onclick="updateQty(${item.id}, 1)">+</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            }
+        });
+
+        if (activeLines === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:20px; color:#aaa; font-size:13px;">${dictionary[lang].emptyCart}</div>`;
+        }
+
+        document.getElementById('valCartTotalQty').textContent = totalQuantity;
+        document.getElementById('valCartSubtotal').textContent = subtotal.toFixed(2);
+        document.getElementById('valCartTotal').textContent = subtotal.toFixed(2);
+    }
+
+    function saveCartState() {
+        localStorage.setItem('seafoodCart', JSON.stringify(cart));
+    }
+
+    function proceedToCheckout() {
+        window.location.href = "page2.html";
+    }
+
+    window.onload = async function() {
+        captureContactFromURL();
+        const cached = localStorage.getItem('seafoodCart');
+        if (cached) cart = JSON.parse(cached);
+        await loadProducts();
+        setViewMode('large');
+        setLang(localStorage.getItem('selectedLanguage') || 'en');
+        resolveContactDisplay();  // token → 遮罩顯示，更新頁首聯絡人
+    }
+</script>
+</body>
+</html>

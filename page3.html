@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seafood Online Portal - Repeat Order</title>
+    <style>
+        :root {
+            --primary-orange: #ff4d2e;
+            --primary-hover: #fb3411;
+            --secondary-blue: #0046b4;
+            --bg-light: #f5f5f5;
+            --border-color: #e5e5e5;
+            --text-dark: #212121;
+            --text-muted: #757575;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); padding: 15px; }
+        .shopee-container { max-width: 1200px; margin: 0 auto; }
+        
+        .shopee-header { background: linear-gradient(-180deg, var(--primary-orange), #ff6633); color: white; padding: 15px 20px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .shopee-header h1 { font-size: 22px; font-weight: 700; }
+        .header-meta { display: flex; gap: 25px; font-size: 14px; align-items: center; flex-wrap: wrap; }
+        .lang-switch-span a { color: white; text-decoration: none; font-weight: normal; cursor: pointer; }
+        .lang-switch-span a.active { font-weight: bold; text-decoration: underline; }
+
+        .repeat-title-bar { background: white; padding: 15px 20px; border-radius: 6px; margin: 20px 0 15px 0; font-size: 18px; font-weight: 600; border-left: 4px solid var(--primary-orange); }
+        
+        .repeat-card { background: white; border-radius: 6px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .past-order-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px; font-size: 14px; flex-wrap: wrap; gap: 10px; }
+        .past-order-id { font-weight: 600; color: var(--secondary-blue); }
+
+        .table-responsive-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 15px; }
+        .repeat-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .repeat-table th { text-align: left; padding: 10px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); font-weight: 500; }
+        .repeat-table td { padding: 12px 10px; font-size: 14px; border-bottom: 1px solid #f9f9f9; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .img-thumb { width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; background: #fafafa; font-size: 9px; color: #aaa; margin-right: 12px; font-weight: bold; }
+        .prod-cell { display: flex; align-items: center; }
+
+        .repeat-summary { margin-top: 15px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-size: 14px; }
+        .repeat-total-line { font-size: 16px; font-weight: 600; margin-top: 5px; }
+        .repeat-total-line .price { color: var(--primary-orange); font-size: 20px; font-weight: 700; }
+
+        .actions-row { margin-top: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .btn-cancel { background-color: transparent; color: #555; border: 1px solid #bcbcbc; padding: 12px 25px; font-size: 14px; border-radius: 4px; text-decoration: none; font-weight: 500; text-align: center; display: inline-block; min-height: 44px; line-height: 20px; }
+        .btn-cancel:hover { background: #eee; }
+        .btn-confirm-repeat { background: linear-gradient(90deg, #ff6633, var(--primary-orange)); color: white; border: none; padding: 14px 40px; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; box-shadow: 0 2px 4px rgba(255, 77, 46, 0.2); min-height: 44px; }
+
+        @media (max-width: 576px) {
+            .shopee-header { flex-direction: column; text-align: center; }
+            .repeat-card { padding: 15px; }
+            .repeat-summary { align-items: stretch; }
+            .actions-row { flex-direction: column; align-items: stretch; }
+            .btn-cancel, .btn-confirm-repeat { width: 100%; text-align: center; }
+        }
+    </style>
+<script>(function(){var API="https://mickwu108020112.app.n8n.cloud/webhook/papi";var of=window.fetch;window.fetch=function(u,o){try{var s=String(u);if(s.indexOf("/api/")>=0||s.indexOf("/contact-display")>=0){var path=s.split("?")[0].replace(location.origin,"");var qs=(s.split("?")[1]||"");var act="products";if(/\/api\/products\/search/.test(path))act="search";else if(/\/api\/products/.test(path))act="products";else if(/\/contact-display/.test(path))act="contact-display";else if(/\/api\/orders\//.test(path)){act="order";var id=path.split("/").pop();qs=(qs?qs+"&":"")+"id="+id;}else if(/\/api\/orders/.test(path))act="orders";else if(/\/api\/checkout/.test(path))act="checkout";else if(/\/api\/ai\/categories/.test(path))act="ai_categories";else if(/\/api\/ai\/products/.test(path))act="ai_products";else if(/\/api\/ai\/orders/.test(path))act="ai_orders";u=API+"?action="+act+(qs?"&"+qs:"");}}catch(e){}return of(u,o);};})();</script></head>
+<body>
+
+<div class="shopee-container">
+    <header class="shopee-header">
+        <h1 id="txt-h1">Seafood Online Portal</h1>
+        <div class="header-meta">
+            <div class="lang-switch-span">
+                <span id="txt-lang-lbl">Language</span>: 
+                <a id="m-lang-en" onclick="setLang('en')">EN</a> / 
+                <a id="m-lang-zh" onclick="setLang('zh')">CN</a>
+            </div>
+            <div><span id="txt-user-lbl">User</span>: <strong id="txt-username">Customer Name</strong></div>
+        </div>
+    </header>
+
+    <div class="repeat-title-bar" id="txt-bar-title">Replicate Past Grocery Basket Selection</div>
+
+    <div class="repeat-card">
+        <div class="past-order-header">
+            <div><span id="txt-past-lbl">Target Order ID</span>: <span class="past-order-id" id="lblTargetOrderIdDisplay">#1001</span></div>
+            <div><span id="txt-date-lbl">Order Date</span>: <strong id="lblTargetOrderDateDisplay">08-May-2026</strong></div>
+        </div>
+
+        <div class="table-responsive-wrapper">
+            <table class="repeat-table">
+                <thead>
+                    <tr>
+                        <th id="th-name">Grocery Item Name</th>
+                        <th class="text-right" id="th-price">Unit Price</th>
+                        <th class="text-center" id="th-qty">Quantity</th>
+                        <th class="text-right" id="th-subtotal">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="repeatTableBody">
+                    <!-- Generated Dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="repeat-summary">
+            <div><span id="txt-lbl-subtotal">Basket Subtotal</span>: SGD <span id="repSubtotal">0.00</span></div>
+            <div class="repeat-total-line">
+                <span id="txt-lbl-final">Total Bill Payment</span>: <span class="price">SGD <span id="repFinalTotal">0.00</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <a href="page4.html" class="btn-cancel" id="txt-btn-cancel">Cancel and Go Back</a>
+        <button class="btn-confirm-repeat" id="txt-btn-confirm" onclick="executeRepeatOrder()">Confirm & Re-add Grocery Basket</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.__API_BASE__ || 'http://127.0.0.1:8000';
+
+    async function apiFetch(path, opts = {}) {
+        const token = localStorage.getItem('apiToken') || window.__API_TOKEN__ || '';
+        const headers = { ...(opts.headers || {}) };
+        if (token) headers['X-API-Token'] = token;
+        return fetch(API_BASE + path, { ...opts, headers });
+    }
+
+    let activeOrder = null;   // 從 /api/orders/{id} 載入
+
+    const dictionary = {
+        en: {
+            title: "Seafood Online Portal", langLbl: "Language", userLbl: "User", username: "Customer Name",
+            barTitle: "Re-order from Past Order", pastLbl: "Source Order", dateLbl: "Order Date",
+            thName: "Product", thPrice: "Unit Price", thQty: "Quantity", thSubtotal: "Subtotal",
+            lblSubtotal: "Subtotal", lblFinal: "Total",
+            btnCancel: "Cancel and Go Back", btnConfirm: "Add These Items to My Cart",
+            alertMsg: "Items added back to your cart.",
+            loading: "Loading from Odoo…", noOrder: "No order_id provided. Go back to history."
+        },
+        zh: {
+            title: "海鲜网上超市", langLbl: "语言", userLbl: "用户", username: "贵宾顾客姓名",
+            barTitle: "复制历史订单到购物车", pastLbl: "来源订单", dateLbl: "下单时间",
+            thName: "商品", thPrice: "单价", thQty: "数量", thSubtotal: "小计",
+            lblSubtotal: "小计", lblFinal: "总计",
+            btnCancel: "取消并返回", btnConfirm: "加入购物车",
+            alertMsg: "商品已加回购物车。",
+            loading: "正在从 Odoo 载入…", noOrder: "缺少 order_id 参数，请回到历史页。"
+        }
+    };
+
+    // 從網址 ?phone= / ?email= 帶入聯絡人，存 localStorage 供站內各頁共用；頁首聯絡人吃這個值。
+    function captureContactFromURL() {
+        const p = new URLSearchParams(window.location.search);
+        const phone = p.get('phone');
+        const email = p.get('email');
+        if (phone) { localStorage.setItem('contactType', 'phone'); localStorage.setItem('contactInfo', phone); }
+        else if (email) { localStorage.setItem('contactType', 'email'); localStorage.setItem('contactInfo', email); }
+    }
+    function contactLabel() { return localStorage.getItem('contactInfo') || null; }
+
+    function setLang(lang) {
+        localStorage.setItem('selectedLanguage', lang);
+        document.getElementById('m-lang-en').className = lang === 'en' ? 'active' : '';
+        document.getElementById('m-lang-zh').className = lang === 'zh' ? 'active' : '';
+
+        const d = dictionary[lang];
+        document.getElementById('txt-h1').textContent = d.title;
+        document.getElementById('txt-lang-lbl').textContent = d.langLbl;
+        document.getElementById('txt-user-lbl').textContent = d.userLbl;
+        document.getElementById('txt-username').textContent = contactLabel() || d.username;
+        document.getElementById('txt-bar-title').textContent = d.barTitle;
+        document.getElementById('txt-past-lbl').textContent = d.pastLbl;
+        document.getElementById('txt-date-lbl').textContent = d.dateLbl;
+        document.getElementById('th-name').textContent = d.thName;
+        document.getElementById('th-price').textContent = d.thPrice;
+        document.getElementById('th-qty').textContent = d.thQty;
+        document.getElementById('th-subtotal').textContent = d.thSubtotal;
+        document.getElementById('txt-lbl-subtotal').textContent = d.lblSubtotal;
+        document.getElementById('txt-lbl-final').textContent = d.lblFinal;
+        document.getElementById('txt-btn-cancel').textContent = d.btnCancel;
+        document.getElementById('txt-btn-confirm').textContent = d.btnConfirm;
+
+        renderPayloadItems(lang);
+    }
+
+    async function loadOrderFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('order_id');
+        const lang = localStorage.getItem('selectedLanguage') || 'en';
+        const tbody = document.getElementById('repeatTableBody');
+
+        if (!orderId) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:#c00;">${dictionary[lang].noOrder}</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:#999;">${dictionary[lang].loading}</td></tr>`;
+        try {
+            const res = await apiFetch(`/api/orders/${orderId}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            activeOrder = await res.json();
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:40px; color:#c00;">${e.message}</td></tr>`;
+            return;
+        }
+        document.getElementById('lblTargetOrderIdDisplay').textContent = activeOrder.name;
+        document.getElementById('lblTargetOrderDateDisplay').textContent = (activeOrder.date || '').split(' ')[0];
+        renderPayloadItems(lang);
+    }
+
+    function renderPayloadItems(lang) {
+        const tbody = document.getElementById('repeatTableBody');
+        if (!activeOrder) return;
+
+        tbody.innerHTML = '';
+        let subtotal = 0;
+        activeOrder.lines.forEach(ln => {
+            const itemSubtotal = Number(ln.subtotal);
+            subtotal += itemSubtotal;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="prod-cell">
+                        <div class="img-thumb">[id ${ln.product_id}]</div>
+                        <span><strong>${ln.product_name}</strong></span>
+                    </div>
+                </td>
+                <td class="text-right">SGD ${Number(ln.price).toFixed(2)}</td>
+                <td class="text-center">${ln.qty}</td>
+                <td class="text-right">SGD ${itemSubtotal.toFixed(2)}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        document.getElementById('repSubtotal').textContent = subtotal.toFixed(2);
+        document.getElementById('repFinalTotal').textContent = subtotal.toFixed(2);
+    }
+
+    function executeRepeatOrder() {
+        const lang = localStorage.getItem('selectedLanguage') || 'en';
+        if (!activeOrder) return;
+
+        // 把訂單商品加進 localStorage 購物車（key 是 Odoo product_id）
+        const cart = {};
+        activeOrder.lines.forEach(ln => {
+            if (ln.product_id) cart[ln.product_id] = ln.qty;
+        });
+        localStorage.setItem('seafoodCart', JSON.stringify(cart));
+        alert(dictionary[lang].alertMsg);
+        window.location.href = "page1.html";
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        captureContactFromURL();
+        setLang(localStorage.getItem('selectedLanguage') || 'en');
+        loadOrderFromUrl();
+    });
+</script>
+</body>
+</html>

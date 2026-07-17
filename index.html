@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seafood Online Portal</title>
+    <style>
+        :root {
+            --primary-orange: #ff4d2e;
+            --primary-hover: #fb3411;
+            --bg-light: #f5f5f5;
+            --border-color: #e5e5e5;
+            --text-dark: #212121;
+            --text-muted: #757575;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-light); 
+            color: var(--text-dark); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+        .portal-card { 
+            background: white; 
+            width: 100%; 
+            max-width: 450px; 
+            padding: 40px 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06); 
+            border-top: 8px solid var(--primary-orange);
+            text-align: center;
+        }
+        .portal-header { margin-bottom: 35px; }
+        .portal-header h1 { 
+            font-size: 26px; 
+            font-weight: 700; 
+            color: var(--text-dark);
+            margin-bottom: 12px; 
+        }
+        .lang-toggle-bar { 
+            display: inline-flex;
+            background: #f9f9f9;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px; 
+            color: var(--text-muted); 
+            border: 1px solid var(--border-color);
+        }
+        .lang-toggle-bar a { text-decoration: none; color: var(--text-muted); cursor: pointer; }
+        .lang-toggle-bar a.active { font-weight: bold; color: var(--primary-orange); }
+        
+        .nav-links-stack { margin-top: 10px; }
+        .nav-btn { 
+            display: block; 
+            background: linear-gradient(-180deg, var(--primary-orange), #ff6633);
+            color: white; 
+            border: none;
+            padding: 16px 25px; 
+            text-decoration: none; 
+            font-weight: 700; 
+            font-size: 16px; 
+            border-radius: 4px; 
+            text-align: center; 
+            transition: background 0.2s;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 77, 46, 0.15);
+        }
+        .nav-btn:hover { 
+            background: var(--primary-hover);
+        }
+        
+        @media (max-width: 480px) {
+            .portal-card {
+                padding: 30px 15px;
+            }
+            .portal-header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+<script>(function(){var API="https://mickwu108020112.app.n8n.cloud/webhook/papi";var of=window.fetch;window.fetch=function(u,o){try{var s=String(u);if(s.indexOf("/api/")>=0||s.indexOf("/contact-display")>=0){var path=s.split("?")[0].replace(location.origin,"");var qs=(s.split("?")[1]||"");var act="products";if(/\/api\/products\/search/.test(path))act="search";else if(/\/api\/products/.test(path))act="products";else if(/\/contact-display/.test(path))act="contact-display";else if(/\/api\/orders\//.test(path)){act="order";var id=path.split("/").pop();qs=(qs?qs+"&":"")+"id="+id;}else if(/\/api\/orders/.test(path))act="orders";else if(/\/api\/checkout/.test(path))act="checkout";else if(/\/api\/ai\/categories/.test(path))act="ai_categories";else if(/\/api\/ai\/products/.test(path))act="ai_products";else if(/\/api\/ai\/orders/.test(path))act="ai_orders";u=API+"?action="+act+(qs?"&"+qs:"");}}catch(e){}return of(u,o);};})();</script></head>
+<body>
+
+<div class="portal-card">
+    <div class="portal-header">
+        <h1 id="txt-title">Seafood Online Portal</h1>
+        <div class="lang-toggle-bar">
+            <a id="m-lang-en" onclick="setLang('en')">EN</a> 
+            <span style="margin: 0 8px; color: #ccc;">|</span> 
+            <a id="m-lang-zh" onclick="setLang('zh')">CN</a>
+        </div>
+    </div>
+
+    <nav class="nav-links-stack">
+        <a href="page1.html" class="nav-btn" id="btn-p1">Enter</a>
+    </nav>
+</div>
+
+<script>
+    const dictionary = {
+        en: {
+            title: "Seafood Online Portal",
+            p1: "Enter"
+        },
+        zh: {
+            title: "海鲜网上超市",
+            p1: "进入"
+        }
+    };
+
+    function setLang(lang) {
+        localStorage.setItem('selectedLanguage', lang);
+        document.getElementById('m-lang-en').className = lang === 'en' ? 'active' : '';
+        document.getElementById('m-lang-zh').className = lang === 'zh' ? 'active' : '';
+
+        const d = dictionary[lang];
+        document.getElementById('txt-title').textContent = d.title;
+        document.getElementById('btn-p1').textContent = d.p1;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        setLang(localStorage.getItem('selectedLanguage') || 'en');
+    });
+</script>
+</body>
+</html>
