@@ -20,7 +20,7 @@ fetch(API+'?action=order_view&t='+encodeURIComponent(t)).then(function(r){return
   var b=document.getElementById('b');
   if(!d||!d.ok){b.innerHTML='<span class="err">連結無效或訂單不存在</span>';return;}
   var o=d.order,sym=o.currency_symbol||'';
-  var custStage=o.stage_label||(o.customer_confirmed?'已確認(待專人處理)':'報價中(可修改)');
+  var cust=o.customer_confirmed?'客戶已確認':'客戶未確認';
   var odooState=o.state_label||STATE[o.state]||o.state||'-';
   var rows=(o.lines||[]).map(function(l){
     var pr=l.price?(sym+Number(l.price).toFixed(2)):'待確認';
@@ -28,8 +28,8 @@ fetch(API+'?action=order_view&t='+encodeURIComponent(t)).then(function(r){return
     return '<div class="row"><div>'+esc(l.product)+' × '+esc(l.qty)+'<br><span class="muted">單價 '+pr+'</span></div><div>'+sub+'</div></div>';
   }).join('');
   b.innerHTML='<div><b>'+esc(o.name||'報價單')+'</b></div>'
-    +'<div class="badges"><span class="badge b-cust">'+esc(custStage)+'</span>'
-    +'<span class="badge b-odoo">報價單：'+esc(odooState)+'</span></div>'
+    +'<div class="badges"><span class="badge b-cust">'+esc(cust)+'</span>'
+    +'<span class="badge b-odoo">報價單狀態：'+esc(odooState)+'</span></div>'
     +rows+'<div class="total">總金額：<span>'+sym+Number(o.total||0).toFixed(2)+'</span></div>';
 }).catch(function(){document.getElementById('b').innerHTML='<span class="err">連線失敗，請稍後再試</span>';});
 </script></body></html>
